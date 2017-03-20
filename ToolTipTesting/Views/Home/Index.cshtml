@@ -1,0 +1,94 @@
+﻿@model ToolTipTesting.Models.Person
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>Person</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.Id)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.FirstName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.LastName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+        var toolTipUrl = '@Url.RouteUrl("DefaultApi", new { httpRoute = "", controller = "ToolTip" })';
+        var pageId = "page1";
+
+        var tooltipOptions = { placement: 'top', html: true };
+        var tootipEditForm = "<div><input type='text' value='{0}' data-for='{1}' ><button type='submit' value='Save'>Save</div>";
+
+        //get the tooltips
+        var ajaxOptions = { url: toolTipUrl, method: 'get' };
+        $.ajax(ajaxOptions).done(applyToolTips);
+
+        function saveToolTip(event){
+            var elementId = $(this).parent().find('input').attr('data-for');
+            var tip = $(this).parent().find('input').val();
+            var pageId = "page1";
+
+            var tooltip = { ElementId: elementId, Tip: tip, PageId: pageId };
+            var ajaxOptions = { url: toolTipUrl, method: 'post', data: tooltip };
+            $.ajax(ajaxOptions).done(applyToolTips);
+
+        }
+
+        function applyToolTips(toolTips) {
+            $.each(toolTips, function (index, value) {
+                var tip = $(tootipEditForm.replace('{0}', value.Tip).replace('{1}', value.ElementId));
+                tip.find('button').on('click', saveToolTip);
+                var toolTip = {
+                    placement: tooltipOptions.placement,
+                    html: tooltipOptions.html,
+                    title: tip
+                };
+                $(value.ElementId).tooltip(toolTip);
+                $(value.ElementId).tooltip('show');
+            });
+        }
+
+
+
+
+
+
+    </script>
+
+}
